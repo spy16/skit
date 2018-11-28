@@ -34,7 +34,7 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := makeLogger()
 			sl, err := skit.New(*cfg, logger, skit.WithMessageHandler(func(sl *skit.Skit, ev *slack.MessageEvent) {
-				sl.SendText(context.Background(), "Hello world!", ev.Channel)
+				sl.SendText(context.Background(), "`hello`", ev.Channel)
 			}))
 			if err != nil {
 				logger.Fatalf("err: %s", err)

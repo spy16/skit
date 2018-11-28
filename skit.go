@@ -28,12 +28,15 @@ func New(cfg Config, logger Logger, opts ...Option) (*Skit, error) {
 type Skit struct {
 	Logger
 
-	self         string
-	cfg          Config
-	connected    bool
+	// internal states
+	self      string
+	cfg       Config
+	connected bool
+	client    *slack.Client
+
+	// event handlers
 	onMessage    OnMessage
 	onUserTyping OnUserTyping
-	client       *slack.Client
 }
 
 // SendText sends the given message to the channel.
@@ -70,7 +73,7 @@ func (sl *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 		sl.Debugf("HelloEvent received")
 
 	case *slack.MessageEvent:
-		if ev.Msg.Type == "message" && ev.Msg.User == sl.self {
+		if ev.Msg.User == sl.self {
 			return nil
 		}
 		sl.Debugf("message received: channel=%s", ev.Channel)
@@ -88,7 +91,7 @@ func (sl *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 		sl.Infof("connected to slack: %s", ev.Info.User.ID)
 
 	case *slack.UserTypingEvent:
-		sl.Debugf("user typing: channel=%s, user=%s, type=%s", ev.Channel, ev.User, ev.Type)
+		sl.Debugf("ignoring user typing event")
 
 	case *slack.RTMError:
 		sl.Errorf("rtm error received: %s", ev)
@@ -98,7 +101,7 @@ func (sl *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 		sl.Infof("latency received: %s", ev.Value)
 
 	case *slack.UserChangeEvent:
-		sl.Debugf("user change event: %s", ev.User)
+		sl.Debugf("user change event: %s", ev.User.Name)
 
 	default:
 		sl.Warnf("unknown event: %s", reflect.TypeOf(ev))
