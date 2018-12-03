@@ -1,0 +1,10 @@
+# This configuration file is to build an echo-bot.
+# Every message returned by the bot is echoed back.
+
+token: slack-token
+
+handlers:
+- type: echo
+  match:
+  - .*
+

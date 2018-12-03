@@ -1,0 +1,14 @@
+# slack api token
+token: your-slack-token-here 
+
+# log levels (e.g. debug, info, warn, warning etc.)
+log_level: debug
+
+# log format (text and json)
+log_format: text
+
+# list of handlers for handling message events.
+handlers:
+- type: echo
+  match:
+  - hello|hi|howdy

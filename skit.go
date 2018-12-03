@@ -2,6 +2,7 @@ package skit
 
 import (
 	"context"
+	"os"
 	"reflect"
 
 	"github.com/nlopes/slack"
@@ -76,6 +77,10 @@ func (sk *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 	case *slack.ConnectingEvent:
 		sk.connected = false
 		sk.Infof("connecting to slack: attempt=%d", ev.Attempt)
+		if ev.Attempt >= 10 {
+			sk.Errorf("failed to connect to slack in 10 attempts, exiting")
+			os.Exit(1)
+		}
 
 	case *slack.ConnectedEvent:
 		sk.connected = true
@@ -101,6 +106,10 @@ func (sk *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 
 	case *slack.UserChangeEvent:
 		sk.Debugf("user change event: %s", ev.User.Name)
+
+	case *slack.InvalidAuthEvent:
+		sk.Errorf("received authentication failure, exiting..")
+		os.Exit(1)
 
 	default:
 		sk.Warnf("unknown event: %s", reflect.TypeOf(ev))
