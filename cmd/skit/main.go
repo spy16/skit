@@ -13,23 +13,26 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type config struct {
+	Skit      skit.Config
+	LogLevel  string
+	LogFormat string
+}
+
 func main() {
-	cfg := &skit.Config{}
+	cfg := config{}
 
 	cmd := &cobra.Command{
 		Use:   "skit",
 		Short: "skit is a sick slack bot",
 	}
 
-	var logLevel string
-	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "info", "Logging level")
+	cmd.PersistentFlags().StringP("log-level", "l", "info", "Logging level")
 	cmd.PersistentFlags().StringP("token", "t", "", "Slack access token")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		logger := makeLogger(logLevel)
-		sl, err := skit.New(*cfg, logger,
-			skit.WithMessageHandler(onMessage),
-		)
+		logger := makeLogger(cfg.LogLevel)
+		sl, err := skit.New(cfg.Skit, logger)
 		if err != nil {
 			logger.Fatalf("err: %s", err)
 		}
@@ -42,7 +45,7 @@ func main() {
 	cmd.AddCommand(newConfigCmd(cfg))
 
 	cobra.OnInitialize(func() {
-		if err := loadConfig(cmd, cfg); err != nil {
+		if err := loadConfig(cmd, &cfg); err != nil {
 			fmt.Println("failed to load config")
 			os.Exit(1)
 		}
@@ -50,21 +53,25 @@ func main() {
 	cmd.Execute()
 }
 
-func loadConfig(cmd *cobra.Command, into *skit.Config) error {
+func loadConfig(cmd *cobra.Command, into *config) error {
 	viper.AddConfigPath(".")
 	viper.SetConfigName("skit")
 	viper.BindPFlags(cmd.PersistentFlags())
 	viper.AutomaticEnv()
 	viper.ReadInConfig()
 
-	cfg := skit.Config{
-		Token: viper.GetString("token"),
+	cfg := config{
+		Skit: skit.Config{
+			Token: viper.GetString("token"),
+		},
+		LogLevel:  viper.GetString("log-level"),
+		LogFormat: viper.GetString("log-format"),
 	}
 	*into = cfg
 	return nil
 }
 
-func newConfigCmd(cfg *skit.Config) *cobra.Command {
+func newConfigCmd(cfg config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
 		Short: "Display current configuration",
@@ -87,9 +94,5 @@ func makeLogger(logLevel string) *logrus.Logger {
 }
 
 func onMessage(sl *skit.Skit, ev *slack.MessageEvent) {
-	sl.SendText(context.Background(), "`hello`", ev.Channel)
-}
-
-func onTyping(sl *skit.Skit, ev *slack.MessageEvent) {
 	sl.SendText(context.Background(), "`hello`", ev.Channel)
 }
