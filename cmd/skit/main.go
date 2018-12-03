@@ -16,39 +16,31 @@ import (
 func main() {
 	cfg := &skit.Config{}
 
-	var logLevel string
-	makeLogger := func() *logrus.Logger {
-		logger := logrus.New()
-		lvl, err := logrus.ParseLevel(logLevel)
-		if err != nil {
-			lvl = logrus.InfoLevel
-			logger.Warnf("invalid log level '%s', defaulting to info", logLevel)
-		}
-		logger.SetLevel(lvl)
-		return logger
-	}
-
 	cmd := &cobra.Command{
 		Use:   "skit",
 		Short: "skit is a sick slack bot",
-		Run: func(cmd *cobra.Command, args []string) {
-			logger := makeLogger()
-			sl, err := skit.New(*cfg, logger, skit.WithMessageHandler(func(sl *skit.Skit, ev *slack.MessageEvent) {
-				sl.SendText(context.Background(), "`hello`", ev.Channel)
-			}))
-			if err != nil {
-				logger.Fatalf("err: %s", err)
-			}
-
-			if err := sl.Listen(context.Background()); err != nil {
-				logger.Fatalf("err: %s", err)
-			}
-		},
 	}
+
+	var logLevel string
 	cmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "info", "Logging level")
 	cmd.PersistentFlags().StringP("token", "t", "", "Slack access token")
 
+	cmd.Run = func(cmd *cobra.Command, args []string) {
+		logger := makeLogger(logLevel)
+		sl, err := skit.New(*cfg, logger,
+			skit.WithMessageHandler(onMessage),
+		)
+		if err != nil {
+			logger.Fatalf("err: %s", err)
+		}
+
+		if err := sl.Listen(context.Background()); err != nil {
+			logger.Fatalf("err: %s", err)
+		}
+	}
+
 	cmd.AddCommand(newConfigCmd(cfg))
+
 	cobra.OnInitialize(func() {
 		if err := loadConfig(cmd, cfg); err != nil {
 			fmt.Println("failed to load config")
@@ -81,4 +73,23 @@ func newConfigCmd(cfg *skit.Config) *cobra.Command {
 		yaml.NewEncoder(os.Stdout).Encode(cfg)
 	}
 	return cmd
+}
+
+func makeLogger(logLevel string) *logrus.Logger {
+	logger := logrus.New()
+	lvl, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		lvl = logrus.InfoLevel
+		logger.Warnf("invalid log level '%s', defaulting to info", logLevel)
+	}
+	logger.SetLevel(lvl)
+	return logger
+}
+
+func onMessage(sl *skit.Skit, ev *slack.MessageEvent) {
+	sl.SendText(context.Background(), "`hello`", ev.Channel)
+}
+
+func onTyping(sl *skit.Skit, ev *slack.MessageEvent) {
+	sl.SendText(context.Background(), "`hello`", ev.Channel)
 }

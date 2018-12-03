@@ -72,15 +72,6 @@ func (sl *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 	case *slack.HelloEvent:
 		sl.Debugf("HelloEvent received")
 
-	case *slack.MessageEvent:
-		if ev.Msg.User == sl.self {
-			return nil
-		}
-		sl.Debugf("message received: channel=%s", ev.Channel)
-		if sl.onMessage != nil && sl.connected {
-			sl.onMessage(sl, ev)
-		}
-
 	case *slack.ConnectingEvent:
 		sl.connected = false
 		sl.Infof("connecting to slack: attempt=%d", ev.Attempt)
@@ -90,8 +81,20 @@ func (sl *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 		sl.self = ev.Info.User.ID
 		sl.Infof("connected to slack: %s", ev.Info.User.ID)
 
+	case *slack.MessageEvent:
+		if ev.Msg.User == sl.self {
+			return nil
+		}
+		sl.Debugf("message received: channel=%s", ev.Channel)
+		if sl.onMessage != nil && sl.connected {
+			sl.onMessage(sl, ev)
+		}
+
 	case *slack.UserTypingEvent:
 		sl.Debugf("ignoring user typing event")
+		if sl.onUserTyping != nil && sl.connected {
+			sl.onUserTyping(sl, ev)
+		}
 
 	case *slack.RTMError:
 		sl.Errorf("rtm error received: %s", ev)
