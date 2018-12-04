@@ -71,6 +71,9 @@ var hs = map[string]makeFunc{
 	"echo": func(cfg handler) (skit.Handler, error) {
 		return handlers.Echo(cfg.Match...)
 	},
+	"command": func(cfg handler) (skit.Handler, error) {
+		return handlers.Command(cfg.Match, cfg.Cmd)
+	},
 }
 
 type makeFunc func(cfg handler) (skit.Handler, error)

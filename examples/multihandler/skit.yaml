@@ -1,0 +1,10 @@
+handlers:
+- type: echo
+  match:
+  - ^(hello|hi|howdy)$
+- type: command
+  match:
+  - nslookup(.*)
+  cmd:
+  - nslookup
+  - $1
