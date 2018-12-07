@@ -1,5 +1,8 @@
-install: test
+install: tidy test
 	go install ./cmd/skit/
+
+tidy:
+	go mod tidy
 
 all: clean test build
 
