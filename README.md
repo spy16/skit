@@ -1,12 +1,10 @@
-> WIP
-
 # skit
 
 [![GoDoc](https://godoc.org/github.com/spy16/skit?status.svg)](https://godoc.org/github.com/spy16/skit) [![Build Status](https://travis-ci.org/spy16/skit.svg?branch=master)](https://travis-ci.org/spy16/skit) [![Go Report Card](https://goreportcard.com/badge/github.com/spy16/skit)](https://goreportcard.com/report/github.com/spy16/skit)
 
-skit is a simple Slackbot Kit in Go (or `Golang`). Skit pre-compiled
-binary is good enough to build simple slack bots. For more complex usecases
-skit can be used as a library as well.
+Skit is a simple tool/library written in Go (or `Golang`) for building Slack bots.
+Skit pre-compiled binary is good enough to build simple slack bots. For more complex
+usecases skit can be used as a library as well.
 
 ## Installation
 
@@ -18,14 +16,18 @@ Simply download the pre-built binary for your platform from the
 
 ### Pre-compiled Binary
 
-1. Create a custom configuration file by refering to `./examples`
-2. Add your slack api token into `skit.toml` file (`token` field)
-3. Run skit as `skit -c <your-config-file>` or `TOKEN=<slack-token> skit -c <config-file>`
+Release archive will contain a `skit.toml` file with some sample handlers
+setup. To run this default setup:
 
-> Environment variable `TOKEN` if present will override the value of `token`
-> from the configuration file.
+1. Create a bot on slack by following [Documentation](https://api.slack.com/bot-users#creating-bot-user)
+2. Set slack token generate for the bot in `skit.toml`
+3. Run `skit -c skit.toml`
+4. Go to slack and find the bot which you created and chat!
 
 ### As a library
+
+Following sample shows how to build a simple bot that echo's everything
+you say to it!
 
 ```go
 config := skit.Config{
@@ -35,6 +37,8 @@ sk, err := skit.New(config, logrus.New())
 if err != nil {
     panic(err)
 }
+
+sk.Register("echo_all", handlers.Echo(".*"))
 
 sk.Listen(context.Background())
 ```
