@@ -1,17 +1,27 @@
 token = "hello"
 log_format = "text"
-log_level = "info"
+log_level = "debug"
 
 
-# handlers will be registered in the order they are specified here.
-# -----------------------------------------------------------------
-
-# this handler simply echoes back the message
 [[handlers]]
+name = "ping_command"
 type = "command"
-regex = "^ping\s(.*)"
+match = [
+    "hi|hello|howdy"
+]
 cmd = "ping"
 args = [
-    "-c", "10",
-    "$1"
+    "-c", "10", "google.com"
 ]
+timeout = "5s"
+
+
+[[handlers]]
+name = "any_match"
+type = "command"
+match = [
+    ".*"
+]
+cmd = "./hello.sh"
+args = []
+timeout = "5s"

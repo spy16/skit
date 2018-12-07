@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"time"
 
 	"github.com/spy16/skit"
 )
@@ -53,18 +52,22 @@ func (handler Command) Handle(ctx context.Context, sk *skit.Skit, ev *skit.Messa
 		}
 
 		handler.Debugf("expression '%s' matched", rexp.String())
-		sk.SendText(ctx, "Yes boss, on it!", ev.Channel)
 
-		ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+		cmdCtx, cancel := context.WithTimeout(ctx, handler.cfg.timeout)
 		defer cancel()
 
 		args := renderArgs(handler.cfg.Args, matches)
-		handler.Debugf("running '%s %v'", handler.cfg.Cmd, args)
-		cmd := exec.CommandContext(ctx, handler.cfg.Cmd, args...)
+		handler.Debugf("running '%s %v' with timeout '%s'", handler.cfg.Cmd, args, handler.cfg.timeout)
+		cmd := exec.CommandContext(cmdCtx, handler.cfg.Cmd, args...)
 		cmd.Dir, _ = filepath.Abs(handler.cfg.ConfigPath)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
+
 			msg := fmt.Sprintf("I fucked up:\n%s\nerr: %v", out, err)
+
+			if cmdCtx.Err() == context.DeadlineExceeded {
+				msg = fmt.Sprintf(":sob: I couldn't do it in time:\n%s\nerr: %v", out, err)
+			}
 			sk.SendText(ctx, msg, ev.Channel)
 			return true
 		}

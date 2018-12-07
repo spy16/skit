@@ -19,7 +19,7 @@ Simply download the pre-built binary for your platform from the
 ### Pre-compiled Binary
 
 1. Create a custom configuration file by refering to `./examples`
-2. Add your slack api token into `skit.yaml` file (`token` field)
+2. Add your slack api token into `skit.toml` file (`token` field)
 3. Run skit as `skit -c <your-config-file>` or `TOKEN=<slack-token> skit -c <config-file>`
 
 > Environment variable `TOKEN` if present will override the value of `token`

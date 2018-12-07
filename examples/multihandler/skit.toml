@@ -1,4 +1,3 @@
-[skit]
 log_format = "text"
 log_level = "info"
 token = "hello"
