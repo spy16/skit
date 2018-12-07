@@ -1,8 +1,6 @@
 language: go
-go: '1.10'
-install:
-  - make setup-deps
-script: make build
+go: '1.11'
+script: make all
 deploy:
   - provider: script
     skip_cleanup: true

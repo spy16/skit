@@ -1,5 +1,5 @@
 builds:
-  - main: ./cmd/radium/
+  - main: ./cmd/skit/
     goos:
       - linux
       - darwin

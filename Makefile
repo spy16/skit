@@ -1,7 +1,7 @@
 install: test
 	go install ./cmd/skit/
 
-all: clean build
+all: clean test build
 
 test:
 	go test -cover ./...
