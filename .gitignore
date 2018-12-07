@@ -18,4 +18,5 @@ dist/
 # custom
 .DS_Store
 skit-dev.toml
+dev.sh
 cmd/expt/

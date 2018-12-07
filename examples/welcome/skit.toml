@@ -1,0 +1,13 @@
+log_format = "text"
+log_level = "info"
+token = "hello"
+
+[[handlers]]
+name = "match_all"
+type = "command"
+match = [
+    ".*"
+]
+cmd = "./hello.sh"
+args = []
+timeout = "5s"

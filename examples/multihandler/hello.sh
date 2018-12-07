@@ -1,3 +1,3 @@
 #!/bin/sh
 
-echo "hello from the command!"
+echo "Hello from Skit! :heart:"

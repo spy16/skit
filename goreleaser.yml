@@ -17,3 +17,8 @@ archive:
     386: 32-bit
     darwin: macOS
   format: zip
+  files:
+    - LICENSE*
+    - README.md
+    - CHANGELOG*
+    - examples/welcome/*

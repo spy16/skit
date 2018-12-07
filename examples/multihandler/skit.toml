@@ -1,5 +1,5 @@
 log_format = "text"
-log_level = "info"
+log_level = "debug"
 token = "hello"
 
 # handlers will be registered in the order they are specified here.
@@ -14,9 +14,10 @@ match = [
 ]
 
 [[handlers]]
-name = "script"
+name = "match_all"
 type = "command"
 match = [
-    "run the hello script"
+    ".*"
 ]
 cmd = "./hello.sh"
+timeout = "5s"
