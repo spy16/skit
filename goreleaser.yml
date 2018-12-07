@@ -21,4 +21,4 @@ archive:
     - LICENSE*
     - README.md
     - CHANGELOG*
-    - examples/welcome/*
+    - skit.toml

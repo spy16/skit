@@ -18,6 +18,17 @@ var hs = map[string]makeFunc{
 		}
 		return handlers.Echo(echoCfg.Match...)
 	},
+	"simple": func(lg *logrus.Logger, cfg map[string]interface{}) (skit.Handler, error) {
+		var conf struct {
+			Match   []string
+			Message string
+		}
+
+		if err := mapstructure.Decode(cfg, &conf); err != nil {
+			return nil, err
+		}
+		return handlers.Simple(conf.Match, conf.Message)
+	},
 	"command": func(lg *logrus.Logger, cfg map[string]interface{}) (skit.Handler, error) {
 		cc := command.Config{}
 		if err := mapstructure.Decode(cfg, &cc); err != nil {
