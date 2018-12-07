@@ -1,0 +1,17 @@
+token = "hello"
+log_format = "text"
+log_level = "info"
+
+
+# handlers will be registered in the order they are specified here.
+# -----------------------------------------------------------------
+
+# this handler simply echoes back the message
+[[handlers]]
+type = "command"
+regex = "^ping\s(.*)"
+cmd = "ping"
+args = [
+    "-c", "10",
+    "$1"
+]

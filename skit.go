@@ -32,13 +32,21 @@ type Skit struct {
 	connected bool
 	client    *slack.Client
 
-	handlers []Handler
+	handlers []registeredHandler
+}
+
+type registeredHandler struct {
+	name    string
+	handler Handler
 }
 
 // Register a handler to handle message events. Handlers will be executed
 // in the order they are registered in.
-func (sk *Skit) Register(handler Handler) {
-	sk.handlers = append(sk.handlers, handler)
+func (sk *Skit) Register(name string, handler Handler) {
+	sk.handlers = append(sk.handlers, registeredHandler{
+		name:    name,
+		handler: handler,
+	})
 }
 
 // SendText sends the given message to the channel.
@@ -118,13 +126,16 @@ func (sk *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 	return nil
 }
 
-func (sk *Skit) handleMessageEvent(ev *slack.MessageEvent) {
-	for _, handler := range sk.handlers {
-		if handler.Handle(sk, ev) {
+func (sk *Skit) handleMessageEvent(sme *slack.MessageEvent) {
+	ev := MessageEvent(*sme)
+	for _, reg := range sk.handlers {
+		if reg.handler.Handle(context.Background(), sk, &ev) {
+			sk.Debugf("handled by '%s'", reg.name)
 			return
 		}
 	}
 
+	sk.Debugf("no handler found to handle '%v'", ev)
 	msg := "I don't know what to say. :neutral_face:"
 	sk.SendText(context.Background(), msg, ev.Channel)
 }
@@ -136,3 +147,6 @@ type Logger interface {
 	Warnf(msg string, args ...interface{})
 	Errorf(msg string, args ...interface{})
 }
+
+// MessageEvent represents a slack message event.
+type MessageEvent slack.MessageEvent

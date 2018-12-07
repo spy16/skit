@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spy16/skit"
-	"github.com/spy16/skit/handlers"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		Use:   "skit",
 		Short: "skit is a sick slack bot",
 		Run: func(cmd *cobra.Command, args []string) {
-			cfg := loadConfig(cmd)
+			cfgFile, cfg := loadConfig(cmd)
 			logger := makeLogger(cfg.LogLevel, cfg.LogFormat)
 			skCfg := skit.Config{
 				Token: cfg.Token,
@@ -29,54 +29,59 @@ func main() {
 			if err != nil {
 				logger.Fatalf("err: %s", err)
 			}
-			registerHandlers(cfg.Handlers, sl, logger)
+			registerHandlers(cfgFile, cfg.Handlers, sl, logger)
 
 			if err := sl.Listen(context.Background()); err != nil {
 				logger.Fatalf("err: %s", err)
 			}
 		},
 	}
-	cmd.PersistentFlags().StringP("config", "c", "skit.yaml", "Configuration file path")
+	cmd.PersistentFlags().StringP("config", "c", "skit.toml", "Configuration file path")
 
 	cmd.AddCommand(&cobra.Command{
 		Use:   "config",
 		Short: "Display current configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			cfg := loadConfig(cmd)
-			yaml.NewEncoder(os.Stdout).Encode(cfg)
+			_, cfg := loadConfig(cmd)
+			toml.NewEncoder(os.Stdout).Encode(cfg)
 		},
 	})
 
 	cmd.Execute()
 }
 
-func registerHandlers(handlers []handler, sk *skit.Skit, logger *logrus.Logger) {
-	for _, cfg := range handlers {
-		ht := strings.TrimSpace(strings.ToLower(cfg.Type))
-		maker, found := hs[ht]
+func registerHandlers(cfgFile string, handlers []map[string]interface{}, sk *skit.Skit, logger *logrus.Logger) {
+	for index, cfg := range handlers {
+		cfg["configFile"] = cfgFile
+		cfg["configPath"] = filepath.Dir(cfgFile)
+		typ, ok := cfg["type"].(string)
+		if !ok {
+			logger.Fatalf("all handlers need 'type'")
+		}
+
+		name, ok := cfg["name"].(string)
+		if !ok {
+			logger.Fatalf("all handlers need 'name'")
+		}
+
+		name = strings.TrimSpace(name)
+		typ = strings.TrimSpace(strings.ToLower(typ))
+
+		maker, found := hs[typ]
 		if !found {
-			logger.Fatalf("handler of type '%s' not found, exiting", ht)
+			logger.Fatalf("handler of type '%s' not found, exiting", typ)
 		}
 
-		h, err := maker(cfg)
+		h, err := maker(logger, cfg)
 		if err != nil {
-			logger.Fatalf("failed to init handler '%s': %s\n", ht, err)
+			logger.Fatalf("failed to init handler '%s', index %d: %s\n", typ, index, err)
 		}
 
-		sk.Register(h)
+		sk.Register(name, h)
 	}
 }
 
-var hs = map[string]makeFunc{
-	"echo": func(cfg handler) (skit.Handler, error) {
-		return handlers.Echo(cfg.Match...)
-	},
-	"command": func(cfg handler) (skit.Handler, error) {
-		return handlers.Command(cfg.Match, cfg.Cmd)
-	},
-}
-
-type makeFunc func(cfg handler) (skit.Handler, error)
+type makeFunc func(lg *logrus.Logger, cfg map[string]interface{}) (skit.Handler, error)
 
 func makeLogger(logLevel, logFormat string) *logrus.Logger {
 	logger := logrus.New()
@@ -97,7 +102,7 @@ func makeLogger(logLevel, logFormat string) *logrus.Logger {
 	return logger
 }
 
-func loadConfig(cmd *cobra.Command) config {
+func loadConfig(cmd *cobra.Command) (string, config) {
 	cfg := config{}
 	configFile, err := cmd.PersistentFlags().GetString("config")
 	if err != nil {
@@ -111,8 +116,8 @@ func loadConfig(cmd *cobra.Command) config {
 		os.Exit(1)
 	}
 
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		fmt.Printf("failed to read yaml config file: %s\n", err)
+	if err := toml.Unmarshal(data, &cfg); err != nil {
+		fmt.Printf("failed to read toml config file: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -121,18 +126,12 @@ func loadConfig(cmd *cobra.Command) config {
 		cfg.Token = token
 	}
 
-	return cfg
+	return configFile, cfg
 }
 
 type config struct {
-	Token     string    `json:"token" yaml:"token"`
-	LogLevel  string    `json:"log_level" yaml:"log_level"`
-	LogFormat string    `json:"log_format" yaml:"log_format"`
-	Handlers  []handler `json:"handlers" yaml:"handlers"`
-}
-
-type handler struct {
-	Type  string   `json:"type" yaml:"type"`
-	Match []string `json:"match" yaml:"match"`
-	Cmd   []string `json:"cmd" yaml:"cmd"`
+	Token     string                   `toml:"token,omitempty"`
+	LogLevel  string                   `toml:"log_level,omitempty"`
+	LogFormat string                   `toml:"log_format,omitempty"`
+	Handlers  []map[string]interface{} `toml:"handlers,omitempty"`
 }

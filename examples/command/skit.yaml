@@ -1,7 +1,0 @@
-handlers:
-- type: command
-  match:
-  - ^nslookup\s(.*)
-  cmd:
-  - nslookup
-  - $1

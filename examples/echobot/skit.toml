@@ -1,0 +1,16 @@
+[skit]
+log_format = "text"
+log_level = "info"
+token = "hello"
+
+# handlers will be registered in the order they are specified here.
+# -----------------------------------------------------------------
+
+# this handler simply echoes back the message
+# this handler simply echoes back the message
+[[handlers]]
+name = "echo_hi"
+type = "echo"
+match = [
+    "hi|hello|howdy"
+]

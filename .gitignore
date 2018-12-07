@@ -14,7 +14,7 @@ vendor/
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-
 # custom
 .DS_Store
-skit-dev.yaml
+skit-dev.toml
+cmd/expt/
