@@ -13,6 +13,8 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.1
+	github.com/yuin/gopher-lua v0.0.0-20181109042959-a0dfe84f6227
 	golang.org/x/sys v0.0.0-20181206074257-70b957f3b65e // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	layeh.com/gopher-luar v1.0.4
 )

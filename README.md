@@ -60,3 +60,65 @@ sk.Listen(context.Background())
 ```
 
 
+## Handlers
+
+Currently 3 types of handlers are available.
+
+### 1. `simple`
+
+- `simple` handler can be used to build simple regex based conversational bot.
+- Following sample shows how to configure `simple` handler:
+
+    ```toml
+    [[handlers]]
+    name = "simple_bot"
+    type = "simple"
+    match = [
+      "my name is (?P<name>.*)"
+    ]
+    message = "Hello there {{ .name }}!"
+    ```
+
+### 2. `command`
+
+- `command` handler can be used to delegate the message handling responsibility to external command
+- This allows building bots which are more complex than the ones built with `simple`
+- Following sample shows how to configure `command` handler:
+
+    ```toml
+    [[handlers]]
+    name = "external_command"
+    type = "command"
+    match = [
+      ".*"
+    ]
+    cmd = "./hello.sh"
+    args = [
+      "{{ .event.Text }}"
+    ]
+    timeout = "5s"
+    ```
+
+### 3. `lua`
+
+- `lua` allows writing handlers using Lua script which will be executed using embedded [Gopher-Lua](https://gitter.im/yuin/gopher-lua)
+- Lua code will have access to skit instance and its APIs and can be used build complex bots.
+- You can provide paths to be added to `LUA_PATH` as `paths` in the following config.
+- In the config sample below, `source` can be any valid lua code. So you can put your handler code
+  in a file (e.g., `handler.lua`) under one of the `paths` and use `source="require('handler')"` in
+  the handler config.
+- Following sample shows how to configure `lua` handler:
+
+    ```toml
+    [[handlers]]
+    name = "lua_handler"
+    type = "lua"
+    handler = "handle_event"
+    paths = []
+    source = """
+      function handle_event(ctx, sk, event)
+        sk:SendText(ctx, "Hello from Lua!", event.Channel)
+        return true
+      end
+    """
+    ```

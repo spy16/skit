@@ -1,0 +1,11 @@
+token = "your-token-here"
+
+log_level = "info"
+log_format = "text"
+
+[[handlers]]
+  name = "lua_handler"
+  type = "lua"
+  handler = "handle_message"
+  source = "require('handler')"
+  paths = []
