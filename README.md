@@ -20,7 +20,7 @@ Release archive will contain a `skit.toml` file with some sample handlers
 setup. To run this default setup:
 
 1. Create a bot on slack by following [Documentation](https://api.slack.com/bot-users#creating-bot-user)
-2. Set slack token generate for the bot in `skit.toml`
+2. Set slack token generated for the bot in `skit.toml`
 3. Run `skit -c skit.toml`
 4. Go to slack and find the bot which you created and chat!
 

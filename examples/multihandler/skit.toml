@@ -5,12 +5,14 @@ token = "hello"
 # handlers will be registered in the order they are specified here.
 # -----------------------------------------------------------------
 
-# this handler simply echoes back the message
 [[handlers]]
-name = "echo_hi"
-type = "echo"
+name = "echo_greeting"
+type = "simple"
 match = [
     "^(hi|hello|howdy)$"
+]
+message = [
+  "{{.event.Text}}"
 ]
 
 [[handlers]]

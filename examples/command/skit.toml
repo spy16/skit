@@ -2,20 +2,6 @@ token = "hello"
 log_format = "text"
 log_level = "debug"
 
-
-[[handlers]]
-name = "ping_command"
-type = "command"
-match = [
-    "hi|hello|howdy"
-]
-cmd = "ping"
-args = [
-    "-c", "10", "google.com"
-]
-timeout = "5s"
-
-
 [[handlers]]
 name = "any_match"
 type = "command"
