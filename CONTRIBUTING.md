@@ -8,6 +8,7 @@ Any type of contribution is welcome.
 
 Some possible contributions:
 
+- Suggest Logo Design
 - Suggest features to add
 - Suggest improvements to code
 - Suggest improvements to documentation
