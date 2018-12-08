@@ -10,7 +10,7 @@ import (
 // of the regular expressions. The message (argument tplStr) can be a golang text
 // template. Named captures from the regex that matches the input message will be
 // used as data for rendering the message template.
-func SimpleHandler(lg Logger, exps []string, tplStr string) (Handler, error) {
+func SimpleHandler(tplStr string, exps ...string) (Handler, error) {
 	rexps, err := ParseExprs(exps)
 	if err != nil {
 		return nil, err

@@ -22,7 +22,7 @@ func makeSimpleHandler(lg *logrus.Logger, cfg map[string]interface{}) (skit.Hand
 	if err := mapstructure.Decode(cfg, &conf); err != nil {
 		return nil, err
 	}
-	return skit.SimpleHandler(lg, conf.Match, conf.Message)
+	return skit.SimpleHandler(conf.Message, conf.Match...)
 }
 
 func makeCommandHandler(lg *logrus.Logger, cfg map[string]interface{}) (skit.Handler, error) {
@@ -39,7 +39,7 @@ func makeCommandHandler(lg *logrus.Logger, cfg map[string]interface{}) (skit.Han
 		return nil, err
 	}
 
-	cmdH, err := skit.CommandHandler(lg, cc.Cmd, cc.Args, cc.Match)
+	cmdH, err := skit.CommandHandler(cc.Cmd, cc.Args, cc.Match)
 	if err != nil {
 		return nil, err
 	}

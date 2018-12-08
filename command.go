@@ -15,7 +15,7 @@ import (
 // the regex patterns. cmd and args both will be parsed as golang text templates.
 // Named captures from pattern that matches the input message will be used as data
 // for rendering command name and every argument.
-func CommandHandler(lg Logger, cmd string, args []string, patterns []string) (*Command, error) {
+func CommandHandler(cmd string, args []string, patterns []string) (*Command, error) {
 	exps, err := ParseExprs(patterns)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,6 @@ func CommandHandler(lg Logger, cmd string, args []string, patterns []string) (*C
 	}
 
 	cmdH := &Command{}
-	cmdH.Logger = lg
 	cmdH.cmd = *cmdTpl
 	cmdH.args = argTpls
 	cmdH.exprs = exps
@@ -46,7 +45,6 @@ func CommandHandler(lg Logger, cmd string, args []string, patterns []string) (*C
 // Command runs configured command when the message matches the regular
 // expressions.
 type Command struct {
-	Logger
 	Timeout     time.Duration
 	RedirectErr bool
 	WorkingDir  string

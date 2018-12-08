@@ -62,7 +62,7 @@ if err != nil {
     panic(err)
 }
 
-sk.Register("echo_all", handlers.Echo(".*"))
+sk.Register("echo_all", skit.SimpleHandler("{{.input}}",  "(?P<input>.*)"))
 
 sk.Listen(context.Background())
 ```
