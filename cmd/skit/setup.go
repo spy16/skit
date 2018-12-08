@@ -10,6 +10,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/spy16/skit"
 )
 
@@ -64,11 +65,36 @@ func makeLogger(logLevel, logFormat string) *logrus.Logger {
 }
 
 func loadConfig(cmd *cobra.Command) config {
-	cfg := config{}
 	configFile, err := cmd.Flags().GetString("config")
 	if err != nil {
 		fmt.Printf("failed to load config file: %s\n", err)
 		os.Exit(1)
+	}
+
+	viper.AutomaticEnv()
+	viper.SetConfigFile(configFile)
+	viper.ReadInConfig()
+
+	cfg := config{
+		Token:     viper.GetString("TOKEN"),
+		LogLevel:  viper.GetString("LOG_LEVEL"),
+		LogFormat: viper.GetString("LOG_FORMAT"),
+		Handlers:  loadHandlerConfigs(configFile),
+	}
+
+	return cfg
+}
+
+type config struct {
+	Token     string
+	LogLevel  string
+	LogFormat string
+	Handlers  []map[string]interface{}
+}
+
+func loadHandlerConfigs(configFile string) []map[string]interface{} {
+	var hCfg struct {
+		Handlers []map[string]interface{} `toml:"handlers,omitempty"`
 	}
 
 	data, err := ioutil.ReadFile(configFile)
@@ -77,7 +103,7 @@ func loadConfig(cmd *cobra.Command) config {
 		os.Exit(1)
 	}
 
-	if err := toml.Unmarshal(data, &cfg); err != nil {
+	if err := toml.Unmarshal(data, &hCfg); err != nil {
 		fmt.Printf("failed to read toml config file: %s\n", err)
 		os.Exit(1)
 	}
@@ -88,26 +114,14 @@ func loadConfig(cmd *cobra.Command) config {
 		os.Exit(1)
 	}
 
-	for i := range cfg.Handlers {
-		if cfg.Handlers[i] == nil {
-			cfg.Handlers[i] = map[string]interface{}{}
+	for i := range hCfg.Handlers {
+		if hCfg.Handlers[i] == nil {
+			hCfg.Handlers[i] = map[string]interface{}{}
 		}
 
-		cfg.Handlers[i]["configFile"] = configFile
-		cfg.Handlers[i]["configPath"] = configDir
+		hCfg.Handlers[i]["configFile"] = configFile
+		hCfg.Handlers[i]["configPath"] = configDir
 	}
 
-	token := os.Getenv("TOKEN")
-	if len(token) > 0 {
-		cfg.Token = token
-	}
-
-	return cfg
-}
-
-type config struct {
-	Token     string                   `toml:"token,omitempty"`
-	LogLevel  string                   `toml:"log_level,omitempty"`
-	LogFormat string                   `toml:"log_format,omitempty"`
-	Handlers  []map[string]interface{} `toml:"handlers,omitempty"`
+	return hCfg.Handlers
 }
