@@ -13,7 +13,7 @@ Some possible contributions:
 - Suggest improvements to documentation
 - Open an issue and discuss a practice used
 - Try the project and report bugs
-- Designs for the web app
+
 
 Or any other contribution you can think of!
 
