@@ -19,7 +19,7 @@ func main() {
 		Use:   "skit",
 		Short: "skit is a sick slack bot",
 		Run: func(cmd *cobra.Command, args []string) {
-			cfgFile, cfg := loadConfig(cmd)
+			cfg := loadConfig(cmd)
 			logger := makeLogger(cfg.LogLevel, cfg.LogFormat)
 			skCfg := skit.Config{
 				Token: cfg.Token,
@@ -29,7 +29,7 @@ func main() {
 			if err != nil {
 				logger.Fatalf("err: %s", err)
 			}
-			registerHandlers(cfgFile, cfg.Handlers, sl, logger)
+			registerHandlers(cfg.Handlers, sl, logger)
 
 			if err := sl.Listen(context.Background()); err != nil {
 				logger.Fatalf("err: %s", err)
@@ -42,7 +42,7 @@ func main() {
 		Use:   "config",
 		Short: "Display current configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			_, cfg := loadConfig(cmd)
+			cfg := loadConfig(cmd)
 			toml.NewEncoder(os.Stdout).Encode(cfg)
 		},
 	})
@@ -50,10 +50,8 @@ func main() {
 	cmd.Execute()
 }
 
-func registerHandlers(cfgFile string, handlers []map[string]interface{}, sk *skit.Skit, logger *logrus.Logger) {
+func registerHandlers(handlers []map[string]interface{}, sk *skit.Skit, logger *logrus.Logger) {
 	for index, cfg := range handlers {
-		cfg["configFile"] = cfgFile
-		cfg["configPath"] = filepath.Dir(cfgFile)
 		typ, ok := cfg["type"].(string)
 		if !ok {
 			logger.Fatalf("all handlers need 'type'")
@@ -67,7 +65,7 @@ func registerHandlers(cfgFile string, handlers []map[string]interface{}, sk *ski
 		name = strings.TrimSpace(name)
 		typ = strings.TrimSpace(strings.ToLower(typ))
 
-		maker, found := hs[typ]
+		maker, found := handlerMap[typ]
 		if !found {
 			logger.Fatalf("handler of type '%s' not found, exiting", typ)
 		}
@@ -102,7 +100,7 @@ func makeLogger(logLevel, logFormat string) *logrus.Logger {
 	return logger
 }
 
-func loadConfig(cmd *cobra.Command) (string, config) {
+func loadConfig(cmd *cobra.Command) config {
 	cfg := config{}
 	configFile, err := cmd.PersistentFlags().GetString("config")
 	if err != nil {
@@ -121,12 +119,27 @@ func loadConfig(cmd *cobra.Command) (string, config) {
 		os.Exit(1)
 	}
 
+	configDir, err := filepath.Abs(filepath.Dir(configFile))
+	if err != nil {
+		fmt.Printf("failed to get absolute path of config file parent: %v", err)
+		os.Exit(1)
+	}
+
+	for i := range cfg.Handlers {
+		if cfg.Handlers[i] == nil {
+			cfg.Handlers[i] = map[string]interface{}{}
+		}
+
+		cfg.Handlers[i]["configFile"] = configFile
+		cfg.Handlers[i]["configPath"] = configDir
+	}
+
 	token := os.Getenv("TOKEN")
 	if len(token) > 0 {
 		cfg.Token = token
 	}
 
-	return configFile, cfg
+	return cfg
 }
 
 type config struct {
