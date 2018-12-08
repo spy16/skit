@@ -27,6 +27,7 @@ func SimpleHandler(lg Logger, exps []string, tplStr string) (Handler, error) {
 			if matches == nil {
 				continue
 			}
+			matches["event"] = *ev
 
 			msg, err := Render(*tpl, matches)
 			if err != nil {

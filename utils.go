@@ -48,13 +48,13 @@ func Render(tpl template.Template, data interface{}) (string, error) {
 
 // CaptureAll matches s with the regex and returns all named capture values.
 // Returns nil if the s was not a match.
-func CaptureAll(regEx *regexp.Regexp, s string) map[string]string {
+func CaptureAll(regEx *regexp.Regexp, s string) map[string]interface{} {
 	match := regEx.FindStringSubmatch(s)
 	if match == nil {
 		return nil
 	}
 
-	paramsMap := map[string]string{}
+	paramsMap := map[string]interface{}{}
 	for i, name := range regEx.SubexpNames() {
 		if i > 0 && i <= len(match) {
 			paramsMap[name] = match[i]

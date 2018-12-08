@@ -24,6 +24,30 @@ setup. To run this default setup:
 3. Run `skit -c skit.toml`
 4. Go to slack and find the bot which you created and chat!
 
+#### `skit.toml` configuration file
+
+Following `skit.toml` file can be used to setup a simple slack bot that
+passes any message sent to it to a shell script `bot.sh`. The output of
+this script will be sent back as the response.
+
+```toml
+token = "your-token-here"
+log_level = "info"
+
+[[handlers]]
+name = "matcha_all"
+type = "command"
+match = [
+	"(?P<input>.*)"
+]
+cmd = "./bot.sh"
+args = [
+	"{{ .input }}"
+]
+```
+
+See `examples/` for samples of different handler configurations.
+
 ### As a library
 
 Following sample shows how to build a simple bot that echo's everything
@@ -42,3 +66,5 @@ sk.Register("echo_all", handlers.Echo(".*"))
 
 sk.Listen(context.Background())
 ```
+
+

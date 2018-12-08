@@ -63,6 +63,7 @@ func (cmd *Command) Handle(ctx context.Context, sk *Skit, ev *MessageEvent) bool
 		if match == nil {
 			continue
 		}
+		match["event"] = *ev
 
 		out, err := cmd.executeCmd(ctx, match)
 		if err != nil {
@@ -79,7 +80,7 @@ func (cmd *Command) Handle(ctx context.Context, sk *Skit, ev *MessageEvent) bool
 	return false
 }
 
-func (cmd *Command) executeCmd(ctx context.Context, match map[string]string) ([]byte, error) {
+func (cmd *Command) executeCmd(ctx context.Context, match map[string]interface{}) ([]byte, error) {
 	if cmd.Timeout.Seconds() == 0 {
 		cmd.Timeout = 1 * time.Minute
 	}
@@ -108,7 +109,7 @@ func (cmd *Command) executeCmd(ctx context.Context, match map[string]string) ([]
 	return out, err
 }
 
-func makeCmd(ctx context.Context, cmd template.Template, args []template.Template, match map[string]string) (*exec.Cmd, error) {
+func makeCmd(ctx context.Context, cmd template.Template, args []template.Template, match map[string]interface{}) (*exec.Cmd, error) {
 	cmdName, err := Render(cmd, match)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to render command name")
