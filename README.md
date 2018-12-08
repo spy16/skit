@@ -62,7 +62,9 @@ sk.Listen(context.Background())
 
 ## Handlers
 
-Currently 3 types of handlers are available.
+A handler is an implementation of `skit.Handler` interface. A handler is responsible
+for consuming event, processing and responding to it when applicable. Currently 3 types
+of handlers are available.
 
 ### 1. `simple`
 
