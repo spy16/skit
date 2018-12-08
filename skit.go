@@ -9,17 +9,13 @@ import (
 )
 
 // New initializes an instance of skit with default event handlers.
-func New(cfg Config, logger Logger) (*Skit, error) {
-	if err := cfg.Validate(); err != nil {
-		return nil, err
-	}
-
+func New(token string, logger Logger) *Skit {
 	sk := &Skit{}
 	sk.Logger = logger
-	sk.cfg = cfg
+	sk.token = token
 	sk.connected = false
 
-	return sk, nil
+	return sk
 }
 
 // Skit represents an instance of skit.
@@ -28,7 +24,7 @@ type Skit struct {
 
 	// internal states
 	self      string
-	cfg       Config
+	token     string
 	connected bool
 	client    *slack.Client
 
@@ -61,7 +57,7 @@ func (sk *Skit) SendText(ctx context.Context, msg string, channel string) error 
 // Listen connects to slack with the given configurations and starts
 // the event loop
 func (sk *Skit) Listen(ctx context.Context) error {
-	sk.client = slack.New(sk.cfg.Token)
+	sk.client = slack.New(sk.token)
 	rtm := sk.client.NewRTM()
 	go rtm.ManageConnection()
 

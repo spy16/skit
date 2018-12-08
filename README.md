@@ -38,11 +38,11 @@ log_level = "info"
 name = "matcha_all"
 type = "command"
 match = [
-	"(?P<input>.*)"
+  ".*"
 ]
 cmd = "./bot.sh"
 args = [
-	"{{ .input }}"
+  "{{ .event.Text }}"
 ]
 ```
 
@@ -54,16 +54,8 @@ Following sample shows how to build a simple bot that echo's everything
 you say to it!
 
 ```go
-config := skit.Config{
-    Token: "your-token-here",
-}
-sk, err := skit.New(config, logrus.New())
-if err != nil {
-    panic(err)
-}
-
-sk.Register("echo_all", skit.SimpleHandler("{{.input}}",  "(?P<input>.*)"))
-
+sk:= skit.New("your-token", logrus.New())
+sk.Register("echo_all", skit.SimpleHandler("{{.event.Text}}",  ".*"))
 sk.Listen(context.Background())
 ```
 

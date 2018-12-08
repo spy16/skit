@@ -33,14 +33,7 @@ func main() {
 func runSkit(cmd *cobra.Command, args []string) {
 	cfg := loadConfig(cmd)
 	logger := makeLogger(cfg.LogLevel, cfg.LogFormat)
-	skCfg := skit.Config{
-		Token: cfg.Token,
-	}
-
-	sl, err := skit.New(skCfg, logger)
-	if err != nil {
-		logger.Fatalf("err: %s", err)
-	}
+	sl := skit.New(cfg.Token, logger)
 	registerHandlers(cfg.Handlers, sl, logger)
 
 	if err := sl.Listen(context.Background()); err != nil {
