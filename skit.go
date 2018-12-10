@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/nlopes/slack"
 )
@@ -24,6 +25,7 @@ type Skit struct {
 
 	// internal states
 	self      string
+	selfName  string
 	token     string
 	connected bool
 	client    *slack.Client
@@ -89,12 +91,20 @@ func (sk *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 	case *slack.ConnectedEvent:
 		sk.connected = true
 		sk.self = ev.Info.User.ID
+		sk.selfName = ev.Info.User.Name
 		sk.Infof("connected to slack: %s", ev.Info.User.ID)
 
 	case *slack.MessageEvent:
 		if ev.Msg.User == sk.self {
 			return nil
 		}
+		_, err := sk.client.GetGroupInfo(ev.Channel)
+		if err == nil {
+			if !sk.isAddressedToMe(ev) {
+				return nil
+			}
+		}
+
 		sk.Debugf("message received: channel=%s", ev.Channel)
 		sk.handleMessageEvent(ev)
 
@@ -134,6 +144,26 @@ func (sk *Skit) handleMessageEvent(sme *slack.MessageEvent) {
 	sk.Debugf("no handler found to handle '%v'", ev)
 	msg := "I don't know what to say. :neutral_face:"
 	sk.SendText(context.Background(), msg, ev.Channel)
+}
+
+func (sk *Skit) isAddressedToMe(ev *slack.MessageEvent) bool {
+	var prefixes = []string{
+		"<@" + sk.self + ">",
+		"<@" + sk.self + "|" + sk.selfName + ">:",
+	}
+
+	sk.Debugf("recevied message: %v", ev.Msg.Text)
+
+	msgText := ev.Msg.Text
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(ev.Msg.Text, prefix) {
+			msgText = strings.TrimSpace(strings.Replace(ev.Msg.Text, prefix, "", -1))
+			ev.Text = msgText
+			return true
+		}
+	}
+
+	return false
 }
 
 // Logger implementation is responsible for providing logging functions.

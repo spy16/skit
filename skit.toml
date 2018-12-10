@@ -10,7 +10,7 @@ match = [
     "my name is (?P<name>.*)"
 ]
 message = """
-Hello there {name}! :heart:. Thanks for using skit!
+Hello there {{ .name }}! :heart:. Thanks for using skit!
 """
 
 
