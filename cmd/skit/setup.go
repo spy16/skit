@@ -76,22 +76,24 @@ func loadConfig(cmd *cobra.Command) config {
 	viper.ReadInConfig()
 
 	cfg := config{
-		Token:     viper.GetString("TOKEN"),
-		NoHandler: viper.GetString("NO_HANDLER"),
-		LogLevel:  viper.GetString("LOG_LEVEL"),
-		LogFormat: viper.GetString("LOG_FORMAT"),
-		Handlers:  loadHandlerConfigs(configFile),
+		Token:              viper.GetString("TOKEN"),
+		NoHandler:          viper.GetString("NO_HANDLER"),
+		RouteGroupMessages: viper.GetBool("ROUTE_GROUP_MESSAGES"),
+		LogLevel:           viper.GetString("LOG_LEVEL"),
+		LogFormat:          viper.GetString("LOG_FORMAT"),
+		Handlers:           loadHandlerConfigs(configFile),
 	}
 
 	return cfg
 }
 
 type config struct {
-	Token     string
-	NoHandler string
-	LogLevel  string
-	LogFormat string
-	Handlers  []map[string]interface{}
+	Token              string
+	NoHandler          string
+	RouteGroupMessages bool
+	LogLevel           string
+	LogFormat          string
+	Handlers           []map[string]interface{}
 }
 
 func loadHandlerConfigs(configFile string) []map[string]interface{} {

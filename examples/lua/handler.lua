@@ -1,5 +1,5 @@
 
 function handle_message(ctx, sk, event)
-    sk:SendText(ctx, "Hello!", event.Channel)
+    sk:SendText(ctx, "```\n" .. json(event) .. "\n```" , event.Channel)
     return true
 end

@@ -27,7 +27,8 @@ func New(token string, logger Logger) *Skit {
 type Skit struct {
 	Logger
 
-	NoHandler template.Template
+	NoHandler          template.Template
+	RouteGroupMessages bool
 
 	// internal states
 	self      string
@@ -105,7 +106,7 @@ func (sk *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 			return nil
 		}
 		_, err := sk.client.GetGroupInfo(ev.Channel)
-		if err == nil {
+		if err == nil && !sk.RouteGroupMessages {
 			if !sk.isAddressedToMe(ev) {
 				return nil
 			}

@@ -35,6 +35,7 @@ func runSkit(cmd *cobra.Command, args []string) {
 	cfg := loadConfig(cmd)
 	logger := makeLogger(cfg.LogLevel, cfg.LogFormat)
 	sl := skit.New(cfg.Token, logger)
+	sl.RouteGroupMessages = cfg.RouteGroupMessages
 
 	if len(cfg.NoHandler) > 0 {
 		tpl, err := template.New("simple").Parse(cfg.NoHandler)

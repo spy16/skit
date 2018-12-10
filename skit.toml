@@ -3,6 +3,7 @@ log_format = "text"
 
 token = "your-token-here"
 no_handler = "Oops! I am not smart enough to respond to that"
+route_group_messages = true
 
 [[handlers]]
 name = "intro"

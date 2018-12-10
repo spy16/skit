@@ -1,6 +1,7 @@
 package lua
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -11,15 +12,28 @@ import (
 
 // NewWrapper initializes a new wrapper with empty Lua state
 func NewWrapper(paths ...string) *Wrapper {
-	wr := &Wrapper{}
-
 	if len(paths) > 0 {
 		pathVal := strings.Join(paths, ";")
 		os.Setenv("LUA_PATH", pathVal)
 	}
 
+	wr := &Wrapper{}
 	wr.state = lua.NewState()
+	setBuiltins(wr)
 	return wr
+}
+
+func setBuiltins(wr *Wrapper) {
+	wr.Bind("json", func(v interface{}) string {
+		d, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			d, _ := json.MarshalIndent(map[string]interface{}{
+				"error": err.Error(),
+			}, "", "  ")
+			return string(d)
+		}
+		return string(d)
+	})
 }
 
 // Wrapper is a thin wrapper around gopher-lua defined
