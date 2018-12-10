@@ -77,6 +77,7 @@ func loadConfig(cmd *cobra.Command) config {
 
 	cfg := config{
 		Token:     viper.GetString("TOKEN"),
+		NoHandler: viper.GetString("NO_HANDLER"),
 		LogLevel:  viper.GetString("LOG_LEVEL"),
 		LogFormat: viper.GetString("LOG_FORMAT"),
 		Handlers:  loadHandlerConfigs(configFile),
@@ -87,6 +88,7 @@ func loadConfig(cmd *cobra.Command) config {
 
 type config struct {
 	Token     string
+	NoHandler string
 	LogLevel  string
 	LogFormat string
 	Handlers  []map[string]interface{}

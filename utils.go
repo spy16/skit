@@ -46,6 +46,17 @@ func Render(tpl template.Template, data interface{}) (string, error) {
 	return wr.String(), nil
 }
 
+// RenderString creates template from tplStr and executes the template with
+// data and returns the rendered string.
+func RenderString(tplStr string, data interface{}) (string, error) {
+	tpl, err := template.New("simple").Parse(tplStr)
+	if err != nil {
+		return "", err
+	}
+
+	return Render(*tpl, data)
+}
+
 // CaptureAll matches s with the regex and returns all named capture values.
 // Returns nil if the s was not a match.
 func CaptureAll(regEx *regexp.Regexp, s string) map[string]interface{} {

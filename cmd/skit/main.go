@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"text/template"
 
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
@@ -34,6 +35,14 @@ func runSkit(cmd *cobra.Command, args []string) {
 	cfg := loadConfig(cmd)
 	logger := makeLogger(cfg.LogLevel, cfg.LogFormat)
 	sl := skit.New(cfg.Token, logger)
+
+	if len(cfg.NoHandler) > 0 {
+		tpl, err := template.New("simple").Parse(cfg.NoHandler)
+		if err != nil {
+			logger.Fatalf("invalid no_handler template: %v", err)
+		}
+		sl.NoHandler = *tpl
+	}
 	registerHandlers(cfg.Handlers, sl, logger)
 
 	if err := sl.Listen(context.Background()); err != nil {

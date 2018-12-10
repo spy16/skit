@@ -2,6 +2,7 @@ log_level = "info"
 log_format = "text"
 
 token = "your-token-here"
+no_handler = "Oops! I am not smart enough to respond to that"
 
 [[handlers]]
 name = "intro"

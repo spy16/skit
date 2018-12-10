@@ -5,9 +5,12 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"text/template"
 
 	"github.com/nlopes/slack"
 )
+
+var defaultNoHandler = template.Must(template.New("simple").Parse("I don't know what to say :neutral_face:"))
 
 // New initializes an instance of skit with default event handlers.
 func New(token string, logger Logger) *Skit {
@@ -16,12 +19,15 @@ func New(token string, logger Logger) *Skit {
 	sk.token = token
 	sk.connected = false
 
+	sk.NoHandler = *defaultNoHandler
 	return sk
 }
 
 // Skit represents an instance of skit.
 type Skit struct {
 	Logger
+
+	NoHandler template.Template
 
 	// internal states
 	self      string
@@ -141,8 +147,13 @@ func (sk *Skit) handleMessageEvent(sme *slack.MessageEvent) {
 		}
 	}
 
-	sk.Debugf("no handler found to handle '%v'", ev)
-	msg := "I don't know what to say. :neutral_face:"
+	sk.Debugf("no handler found to handle '%s'", ev.Text)
+	msg, err := Render(sk.NoHandler, ev)
+	if err != nil {
+		sk.Errorf("failed to render NoHandler template: %v", err)
+		sk.SendText(context.Background(), "Oops! something went terribly wrong :sob:", ev.Channel)
+		return
+	}
 	sk.SendText(context.Background(), msg, ev.Channel)
 }
 
@@ -152,8 +163,7 @@ func (sk *Skit) isAddressedToMe(ev *slack.MessageEvent) bool {
 		"<@" + sk.self + "|" + sk.selfName + ">:",
 	}
 
-	sk.Debugf("recevied message: %v", ev.Msg.Text)
-
+	sk.Debugf("received message: %v", ev.Msg.Text)
 	msgText := ev.Msg.Text
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(ev.Msg.Text, prefix) {
