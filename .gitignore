@@ -20,3 +20,4 @@ dist/
 skit-dev.toml
 dev.sh
 cmd/expt/
+.vscode
