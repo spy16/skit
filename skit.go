@@ -29,13 +29,13 @@ type Skit struct {
 
 	NoHandler          template.Template
 	RouteGroupMessages bool
+	Client             *slack.Client
 
 	// internal states
 	self      string
 	selfName  string
 	token     string
 	connected bool
-	client    *slack.Client
 
 	handlers []registeredHandler
 }
@@ -56,7 +56,7 @@ func (sk *Skit) Register(name string, handler Handler) {
 
 // SendText sends the given message to the channel.
 func (sk *Skit) SendText(ctx context.Context, msg string, channel string) error {
-	_, _, _, err := sk.client.SendMessageContext(ctx, channel,
+	_, _, _, err := sk.Client.SendMessageContext(ctx, channel,
 		slack.MsgOptionText(msg, false),
 		slack.MsgOptionAsUser(true),
 	)
@@ -66,8 +66,8 @@ func (sk *Skit) SendText(ctx context.Context, msg string, channel string) error 
 // Listen connects to slack with the given configurations and starts
 // the event loop
 func (sk *Skit) Listen(ctx context.Context) error {
-	sk.client = slack.New(sk.token)
-	rtm := sk.client.NewRTM()
+	sk.Client = slack.New(sk.token)
+	rtm := sk.Client.NewRTM()
 	go rtm.ManageConnection()
 
 	for {
@@ -105,7 +105,7 @@ func (sk *Skit) routeEvent(rtmEv slack.RTMEvent) error {
 		if ev.Msg.User == sk.self {
 			return nil
 		}
-		_, err := sk.client.GetGroupInfo(ev.Channel)
+		_, err := sk.Client.GetGroupInfo(ev.Channel)
 		if err == nil && !sk.RouteGroupMessages {
 			if !sk.isAddressedToMe(ev) {
 				return nil
