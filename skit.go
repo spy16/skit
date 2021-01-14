@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 var defaultNoHandler = template.Must(template.New("simple").Parse("I don't know what to say :neutral_face:"))
